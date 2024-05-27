@@ -45,13 +45,16 @@ local options = {
     audio = false,
 
     -- Enable hardware decoding
-    hwdec = false,
+    hwdec = "no",
 
     -- Windows only: use native Windows API to write to pipe (requires LuaJIT)
     direct_io = false,
 
     -- Custom path to the mpv executable
-    mpv_path = "mpv"
+    mpv_path = "mpv",
+
+    -- Additional mpv arguments
+    mpv_args= "",
 }
 
 mp.utils = require "mp.utils"
@@ -451,12 +454,13 @@ local function spawn(time)
     has_vid = vid or 0
 
     local args = {
-        mpv_path, "--no-config", "--msg-level=all=no", "--idle", "--pause", "--keep-open=always", "--really-quiet", "--no-terminal",
+        mpv_path, "--no-config", "--hwdec="..(options.hwdec or "no"), options.mpv_args,
+        "--msg-level=all=no", "--idle", "--pause", "--keep-open=always", "--really-quiet", "--no-terminal",
         "--load-scripts=no", "--osc=no", "--ytdl=no", "--load-stats-overlay=no", "--load-osd-console=no", "--load-auto-profiles=no",
         "--edition="..(properties["edition"] or "auto"), "--vid="..(vid or "auto"), "--no-sub", "--no-audio",
         "--start="..time, allow_fast_seek and "--hr-seek=no" or "--hr-seek=yes",
         "--ytdl-format=worst", "--demuxer-readahead-secs=0", "--demuxer-max-bytes=128KiB",
-        "--vd-lavc-skiploopfilter=all", "--vd-lavc-software-fallback=1", "--vd-lavc-fast", "--vd-lavc-threads=2", "--hwdec="..(options.hwdec and "auto" or "no"),
+        "--vd-lavc-skiploopfilter=all", "--vd-lavc-software-fallback=1", "--vd-lavc-fast", "--vd-lavc-threads=2",
         "--vf="..vf_string(filters_all, true),
         "--sws-scaler=fast-bilinear",
         "--video-rotate="..last_rotate,
